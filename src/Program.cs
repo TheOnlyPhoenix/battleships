@@ -378,7 +378,8 @@ namespace Battleships
                     Console.WriteLine("1. Play Battleships");
                     Console.WriteLine("2. Show latest winner");
                     Console.WriteLine("3. Settings");
-                    Console.WriteLine("4. Exit");
+                    Console.WriteLine("4. Colour information");
+                    Console.WriteLine("5. Exit");
                     choice = Console.ReadLine();
                     switch (choice)
                     {
@@ -450,6 +451,12 @@ namespace Battleships
                             Console.Clear();
                             break;
                         case "4":
+                            Console.WriteLine("Your placed ship is Blue and marked with an X. It will turn Red if hit by the computer.");
+                            Console.WriteLine("If the computer misses, the white O on your map will turn Red.");
+                            Console.WriteLine("The computer's map is marked with '-' by default. They will turn into Green X:s if you ");
+                            Console.WriteLine("hit a ship, and red O:s if you miss.");
+                            break;
+                        case "5":
                             Console.WriteLine("Exiting...");
                             break;
                     }
