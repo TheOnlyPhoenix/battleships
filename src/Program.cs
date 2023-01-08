@@ -83,6 +83,7 @@ namespace SinkShips
 
             void PlaceShips()
             {
+                // Lets the user place ships on the playfield and updates dynamically, showing previously placed ships
                 int x;
                 int y;
 
@@ -254,11 +255,6 @@ namespace SinkShips
                                 // Red shows shot, regardless of hit or miss
                                 Console.ForegroundColor = ConsoleColor.Red;
                                 Console.Write(playerMap[x, y]);
-                                if (playerMap[x, y] == "X")
-                                {
-                                    ComputerShotReturnX(x);
-                                    ComputerShotReturnY(y);
-                                }
                             }
                             else if (playerMap[x, y] == "X")
                             {
@@ -294,7 +290,7 @@ namespace SinkShips
                                 Console.Write("-");
                             }
 
-                            // Återställ färgen
+                            // Reset colours
                             Console.ForegroundColor = ConsoleColor.Gray;
                         }
                         Console.WriteLine();
@@ -441,9 +437,21 @@ namespace SinkShips
             {
                 int x;
                 int y;
+                x = rand.Next(mapWidth);
+                y = rand.Next(mapHeight);
 
+                while (computerShot[x, y] == true)
+                {
+                    x = rand.Next(mapWidth);
+                    y = rand.Next(mapHeight);
+                }
+                computerShot[x, y] = true;
 
-                List<int> surroundingCoords = new List<int>();
+                // Very bad attempt at trying to make the computer shoot at all non-diagonal ships surrounding the last hit.
+                // I don't know what I'm doing wrong nor how to fix it. Commented the "broken" code out and right now it's just 
+                // using a completely dumb AI.
+
+                /* List<int> surroundingCoords = new List<int>();
 
                 if (intelligence == false)
                 {
@@ -463,7 +471,7 @@ namespace SinkShips
                     }
 
                 }
-
+                
                 while (surroundingCoords.Count < 1)
                 {
                     
@@ -538,6 +546,7 @@ namespace SinkShips
 
                     surroundingCoords.RemoveAt(surroundingCoords.Count - 1);
                 }
+                */
             }
 
             void Menu()
@@ -639,17 +648,6 @@ namespace SinkShips
                             break;
                     }
                 }
-            }
-
-            int ComputerShotReturnX(int x)
-            {
-                int shotReturn = x;
-                return shotReturn;
-            }
-            int ComputerShotReturnY(int Y)
-            {
-                int shotReturn = Y;
-                return shotReturn;
             }
 
             // The following five methods are extremely ugly, but it's the only solution I could come up with.
