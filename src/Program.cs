@@ -1,11 +1,14 @@
 ﻿using System;
-namespace Battleships
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+namespace SinkShips
 {
     class Program
     {
         static void Main()
         {
-            int mapWidth =  8;
+            int mapWidth = 8;
             int mapHeight = 8;
 
             string[,] playerMap = new string[mapWidth, mapHeight];
@@ -22,14 +25,18 @@ namespace Battleships
             bool testingMode = false;
             bool intelligence = false;
             bool inputCheck = false;
+            bool skipShot = false;
 
             string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ";
+            int rememberPositionX = 0;
+            int rememberPositionY = 0;
 
             Menu();
 
-            // Metoder
+            // Methods
             void PlayTheGame()
             {
+
                 SaveMap();
                 PlaceShips();
                 while (anyWinner == false)
@@ -61,7 +68,7 @@ namespace Battleships
 
             void SaveMap()
             {
-                // Metod som sparar kartans storlek i en array
+                // Method that saves the map's unchanged layout to arrays
                 for (int y = 0; y < mapHeight; y++)
                 {
                     for (int x = 0; x < mapWidth; x++)
@@ -76,50 +83,158 @@ namespace Battleships
 
             void PlaceShips()
             {
-                Console.WriteLine($"The board is {mapWidth}x{mapHeight} big");
-
-                Thread.Sleep(1000);
-
                 int x;
                 int y;
 
-                for (int i = 0; i < 2; i++)
+                Console.Clear();
+
+                MiniMap();
+
+                Console.WriteLine($"The board is {mapWidth}x{mapHeight} big");
+                Thread.Sleep(500);
+                Console.WriteLine("Single Ship");
+                int[] positionReceive = PositionParse();
+                x = positionReceive[0] - 1;
+                y = positionReceive[1] - 1;
+                playerMap[x, y] = "X";
+
+                Console.Clear();
+
+                MiniMap();
+
+                Console.WriteLine("1st Double Ship (Horizontal)");
+                positionReceive = PositionParseXPlusOne();
+                x = positionReceive[0] - 1;
+                y = positionReceive[1] - 1;
+                while (playerMap[x, y] == "X" || playerMap[x + 1, y] == "X" || x + 1 >= mapWidth)
                 {
-                    int[] positionReceive = PositionParse();
+                    Console.WriteLine("Another ship exists in this location, please choose again");
+                    Thread.Sleep(1000);
+                    positionReceive = PositionParseXPlusOne();
                     x = positionReceive[0] - 1;
                     y = positionReceive[1] - 1;
-                    while (playerMap[x, y] == "X")
-                    {
-                        Console.WriteLine("Another ship exists in this location, please choose again");
-                        Thread.Sleep(1000);
-                        positionReceive = PositionParse();
-                        x = positionReceive[0] - 1;
-                        y = positionReceive[1] - 1;
-                    }
-                    playerMap[x, y] = "X";
                 }
+                playerMap[x, y] = "X";
+                playerMap[x + 1, y] = "X";
 
-                int z = rand.Next(mapWidth);
-                int v = rand.Next(mapHeight);
-                computerMap[z, v] = "X";
-                for (int i = 0; i < 1; i++)
+                Console.Clear();
+
+                MiniMap();
+
+                Console.WriteLine("2nd Double Ship (Vertical)");
+                positionReceive = PositionParseYPlusOne();
+                x = positionReceive[0] - 1;
+                y = positionReceive[1] - 1;
+                while (playerMap[x, y] == "X" || playerMap[x, y + 1] == "X")
                 {
-                    z = rand.Next(mapWidth);
-                    v = rand.Next(mapHeight);
-                    while (computerMap[z, v] == "X")
-                    {
-                        z = rand.Next(mapWidth);
-                        v = rand.Next(mapHeight);
-                    }
-                    computerMap[z, v] = "X";
+                    Console.WriteLine("Another ship exists in this location, please choose again");
+                    Thread.Sleep(1000);
+                    positionReceive = PositionParseYPlusOne();
+                    x = positionReceive[0] - 1;
+                    y = positionReceive[1] - 1;
                 }
+                playerMap[x, y] = "X";
+                playerMap[x, y + 1] = "X";
+
+                Console.Clear();
+
+                MiniMap();
+
+                Console.WriteLine("1st Triple Ship (Horizontal)");
+                positionReceive = PositionParseXPlusTwo();
+                x = positionReceive[0] - 1;
+                y = positionReceive[1] - 1;
+                while (playerMap[x, y] == "X" || playerMap[x + 1, y] == "X" || playerMap[x + 2, y] == "X" || x + 1 >= mapWidth || x + 2 >= mapWidth)
+                {
+                    Console.WriteLine("Another ship exists in this location, please choose again");
+                    Thread.Sleep(1000);
+                    positionReceive = PositionParseXPlusTwo();
+                    x = positionReceive[0] - 1;
+                    y = positionReceive[1] - 1;
+                }
+                playerMap[x, y] = "X";
+                playerMap[x + 1, y] = "X";
+                playerMap[x + 2, y] = "X";
+
+                Console.Clear();
+
+                MiniMap();
+
+                Console.WriteLine("2nd Triple Ship (Vertical)");
+                positionReceive = PositionParseYPlusTwo();
+                x = positionReceive[0] - 1;
+                y = positionReceive[1] - 1;
+                while (playerMap[x, y] == "X" || playerMap[x, y + 1] == "X" || playerMap[x, y + 2] == "X" || y + 1 >= mapHeight || y + 2 >= mapHeight)
+                {
+                    Console.WriteLine("Another ship exists in this location, please choose again");
+                    Thread.Sleep(1000);
+                    positionReceive = PositionParseYPlusTwo();
+                    x = positionReceive[0] - 1;
+                    y = positionReceive[1] - 1;
+                }
+                playerMap[x, y] = "X";
+                playerMap[x, y + 1] = "X";
+                playerMap[x, y + 2] = "X";
+
+                // Single ship
+                x = rand.Next(mapWidth);
+                y = rand.Next(mapHeight);
+                computerMap[x, y] = "X";
+
+                //   Double ship X
+                x = rand.Next(mapWidth - 1);
+                y = rand.Next(mapHeight);
+                while (computerMap[x, y] == "X" || computerMap[x + 1, y] == "X")
+                {
+                    x = rand.Next(mapWidth - 1);
+                    y = rand.Next(mapHeight);
+                }
+                computerMap[x, y] = "X";
+                computerMap[x + 1, y] = "X";
+
+                // Double Ship Y
+                x = rand.Next(mapWidth);
+                y = rand.Next(mapHeight - 1);
+                while (computerMap[x, y] == "X" || computerMap[x, y + 1] == "X")
+                {
+                    x = rand.Next(mapWidth);
+                    y = rand.Next(mapHeight - 1);
+                }
+                computerMap[x, y] = "X";
+                computerMap[x, y + 1] = "X";
+
+                // Triple Ship X
+                x = rand.Next(mapWidth - 2);
+                y = rand.Next(mapHeight);
+                while (computerMap[x, y] == "X" || computerMap[x + 1, y] == "X" || computerMap[x + 2, y] == "X")
+                {
+                    x = rand.Next(mapWidth - 2);
+                    y = rand.Next(mapHeight);
+                }
+                computerMap[x, y] = "X";
+                computerMap[x + 1, y] = "X";
+                computerMap[x + 2, y] = "X";
+
+                // Triple Ship Y
+                x = rand.Next(mapWidth);
+                y = rand.Next(mapHeight - 2);
+                while (computerMap[x, y] == "X" || computerMap[x, y + 1] == "X" || computerMap[x, y + 2] == "X")
+                {
+                    x = rand.Next(mapWidth);
+                    y = rand.Next(mapHeight - 2);
+                }
+                computerMap[x, y] = "X";
+                computerMap[x, y + 1] = "X";
+                computerMap[x, y + 2] = "X";
+
+
             }
 
 
-            // Metod som ritar ut spelarkartan och datorkartan
+            // Draws the computer's and player's maps
             void DrawMap()
             {
-                // Loop som ritar ut spelarkartorna bredvid varandra
+                // Draws the maps next to each other
                 Console.Write("Player");
                 for (int p = 0; p < mapWidth; p++)
                 {
@@ -136,9 +251,14 @@ namespace Battleships
                         {
                             if (computerShot[x, y] == true)
                             {
-                                // Röd visar att det är en träff
+                                // Red shows shot, regardless of hit or miss
                                 Console.ForegroundColor = ConsoleColor.Red;
                                 Console.Write(playerMap[x, y]);
+                                if (playerMap[x, y] == "X")
+                                {
+                                    ComputerShotReturnX(x);
+                                    ComputerShotReturnY(y);
+                                }
                             }
                             else if (playerMap[x, y] == "X")
                             {
@@ -150,7 +270,7 @@ namespace Battleships
                                 Console.Write(playerMap[x, y]);
                             }
 
-                            // Återställ färgen
+                            // Reset colours
                             Console.ForegroundColor = ConsoleColor.Gray;
                         }
                         Console.Write("    ");
@@ -160,7 +280,7 @@ namespace Battleships
 
                             if (playerShot[x, y] == true && computerMap[x, y] == "X")
                             {
-                                // grön visar att det är en träff
+                                // Green shows a hit
                                 Console.ForegroundColor = ConsoleColor.Green;
                                 Console.Write(computerMap[x, y]);
                             }
@@ -180,6 +300,7 @@ namespace Battleships
                         Console.WriteLine();
                     }
                 }
+                // "Cheat" mode that shows the computer's ships
                 else if (testingMode == true)
                 {
                     Console.WriteLine($"  {alphabet.Substring(0, mapWidth)}      {alphabet.Substring(0, mapWidth)}");
@@ -190,7 +311,6 @@ namespace Battleships
                         {
                             if (computerShot[x, y] == true)
                             {
-                                // Röd visar att det är en träff
                                 Console.ForegroundColor = ConsoleColor.Red;
                                 Console.Write(playerMap[x, y]);
                             }
@@ -204,7 +324,6 @@ namespace Battleships
                                 Console.Write(playerMap[x, y]);
                             }
 
-                            // Återställ färgen
                             Console.ForegroundColor = ConsoleColor.Gray;
                         }
                         Console.Write("    ");
@@ -217,7 +336,6 @@ namespace Battleships
                             }
                             else if (playerShot[x, y] == true && computerMap[x, y] == "X")
                             {
-                                // Röd visar att det är en träff
                                 Console.ForegroundColor = ConsoleColor.Green;
                                 Console.Write(computerMap[x, y]);
                             }
@@ -231,16 +349,11 @@ namespace Battleships
                                 Console.Write("-");
                             }
 
-                            // Återställ färgen
                             Console.ForegroundColor = ConsoleColor.Gray;
                         }
                         Console.WriteLine();
                     }
                 }
-                Console.WriteLine();
-                // Loop som ritar ut datorkartan
-                Console.WriteLine("Computer's map");
-                // här ska vi sätta en if-sats som beror på ett menyval i början "Fusk/Test". alltså om man inte har fusk kör den första forloopen, om man har fusk så kör den en sats som ritar ut X för datorn
 
             }
 
@@ -256,8 +369,6 @@ namespace Battleships
 
             int[] CombinedShot()
             {
-
-
                 int x = -9999;
                 int y = -9999;
                 int inputLength = 2;
@@ -283,10 +394,6 @@ namespace Battleships
                         inputCheck = false;
                         Console.WriteLine("Invalid input. Try again");
                     }
-                    //if (yCoord < 0 || x < 0 || yCoord > mapHeight || x > mapWidth)
-                    //{
-                    //    Console.WriteLine("Position out of bounds. Try again.");
-                    //}
                 }
                 int[] shotReturn = new int[2];
                 shotReturn[0] = x;
@@ -296,21 +403,9 @@ namespace Battleships
             }
 
 
-
-            int ReadInt()
-            {
-                // Läser in ett heltal inom arrayen
-                int num;
-                while (int.TryParse(Console.ReadLine(), out num) == false)
-                {
-                    Console.WriteLine("Not within playing field");
-                }
-                return num;
-            }
-
             bool HasPlayerWon()
             {
-                // Kollar om det finns några osänkta skepp
+                // Checks if there are any unsunk ships on the computer's playing field
                 for (int y = 0; y < mapHeight; y++)
                 {
                     for (int x = 0; x < mapWidth; x++)
@@ -327,7 +422,7 @@ namespace Battleships
 
             bool HasComputerWon()
             {
-                //kollar om det finns några osänkta skepp
+                // Checks if there are any unsunk ships on the player's playing field
                 for (int y = 0; y < mapHeight; y++)
                 {
                     for (int x = 0; x < mapWidth; x++)
@@ -344,41 +439,117 @@ namespace Battleships
 
             void CheckComputerShot()
             {
-                int y = rand.Next(mapHeight);
-                int x = rand.Next(mapWidth);
-                //if (intelligence == false)
-                //{
+                int x;
+                int y;
+
+
+                List<int> surroundingCoords = new List<int>();
+
+                if (intelligence == false)
+                {
+                    x = rand.Next(mapWidth);
+                    y = rand.Next(mapHeight);
+
                     while (computerShot[x, y] == true)
                     {
-                        y = rand.Next(mapHeight);
                         x = rand.Next(mapWidth);
+                        y = rand.Next(mapHeight);
                     }
                     computerShot[x, y] = true;
-                //    if (playerMap[x, y] == "X")
-                //    {
-                //        intelligence = true;
-                //    }
-                //}
-                //if (intelligence == true)
-                //{
-                //    if (playerMap[x, y] == "X")
-                //    {
+                    if (playerMap[x, y] == "X")
+                    {
+                        rememberPositionX = x;
+                        rememberPositionY = y;
+                    }
 
-                //    }
-                //}
+                }
 
+                while (surroundingCoords.Count < 1)
+                {
+                    
+                    surroundingCoords.Add(1);
+                    surroundingCoords.Add(2);
+                    surroundingCoords.Add(3);
+                    surroundingCoords.Add(4);
+                }
+                if (intelligence == true)
+                {
+                    x = rememberPositionX;
+                    y = rememberPositionY;
+                    if (surroundingCoords.Count == 4)
+                    {
+                        if (x + 1 <= mapWidth || computerShot[x + 1, y] == false)
+                        {
+                            x = rememberPositionX + 1;
+                            computerShot[x, y] = true;
+                        }
+                        else
+                        {
+                            skipShot = true;
+                        }
+                    }
+                    if (surroundingCoords.Count == 3 || skipShot == true)
+                    {
+                        skipShot = false;
+                        if (y + 1 <= mapHeight || computerShot[x, y + 1] == false)
+                        {
+                            y = rememberPositionY + 1;
+                            computerShot[x, y] = true;
+                        }
+                        else
+                        {
+                            skipShot = true;
+                        }
+                    }
+                    if (surroundingCoords.Count == 2 || skipShot == true)
+                    {
+                        skipShot = false;
+                        if (x - 1 <= mapWidth || computerShot[x - 1, y] == false)
+                        {
+                            x = rememberPositionX - 1;
+                            computerShot[x, y] = true;
+                        }
+                        else
+                        {
+                            skipShot = true;
+                        }
+                    }
+                    if (surroundingCoords.Count == 1 || skipShot == true)
+                    {
+                        skipShot = false;
+                        if (y - 1 <= mapWidth || computerShot[x, y - 1] == false)
+                        {
+                            y = rememberPositionY - 1;
+                            computerShot[x, y] = true;
+                        }
+                        else
+                        {
+                            skipShot = true;
+                        }
+
+                        if (surroundingCoords.Count > 1)
+                        {
+                            for (int i = surroundingCoords.Count; i > 1; i--)
+                            {
+                                surroundingCoords.RemoveAt(i - 1);
+                            }
+                        }
+                    }
+
+                    surroundingCoords.RemoveAt(surroundingCoords.Count - 1);
+                }
             }
 
             void Menu()
             {
                 Console.Clear();
                 string choice = "";
-                while (choice != "4")
+                while (choice != "5")
                 {
                     Console.WriteLine("1. Play Battleships");
                     Console.WriteLine("2. Show latest winner");
                     Console.WriteLine("3. Settings");
-                    Console.WriteLine("4. Colour information");
+                    Console.WriteLine("4. Game information");
                     Console.WriteLine("5. Exit");
                     choice = Console.ReadLine();
                     switch (choice)
@@ -410,6 +581,7 @@ namespace Battleships
                             switch (settingChoice)
                             {
                                 case "1":
+                                    // Option to enable the "cheat" mode which shows all the opponent's ships
                                     Console.Clear();
                                     Console.WriteLine("Do you want to enable testing? y/n");
                                     string answer = Console.ReadLine();
@@ -423,6 +595,7 @@ namespace Battleships
                                     }
                                     break;
                                 case "2":
+                                    // Allows the user to change the playfield size
                                     int x = -9999;
                                     int y = -9999;
                                     if (x < 2 || x > mapWidth || y < 2 || y > mapHeight)
@@ -431,7 +604,7 @@ namespace Battleships
                                         string size = Console.ReadLine();
                                         x = int.Parse(size.Substring(0, 1));
                                         y = int.Parse(size.Substring(2, 1));
-                                        while (x < 2 || x > mapWidth || y < 2 || y > mapHeight)
+                                        while (x < 2 || x > mapWidth || y < 2 || y > mapHeight || size.Length != 2)
                                         {
                                             Console.WriteLine("Invalid Size.");
                                             Thread.Sleep(1000);
@@ -451,10 +624,15 @@ namespace Battleships
                             Console.Clear();
                             break;
                         case "4":
+                            // Explains the game design
+                            Console.Clear();
                             Console.WriteLine("Your placed ship is Blue and marked with an X. It will turn Red if hit by the computer.");
                             Console.WriteLine("If the computer misses, the white O on your map will turn Red.");
                             Console.WriteLine("The computer's map is marked with '-' by default. They will turn into Green X:s if you ");
                             Console.WriteLine("hit a ship, and red O:s if you miss.");
+                            Console.WriteLine("Both players have 5 ships: 1 single length, 2 double length, 2 triple length. One of ");
+                            Console.WriteLine("each longer ship is vertical, the other is horizontal.");
+
                             break;
                         case "5":
                             Console.WriteLine("Exiting...");
@@ -463,7 +641,20 @@ namespace Battleships
                 }
             }
 
+            int ComputerShotReturnX(int x)
+            {
+                int shotReturn = x;
+                return shotReturn;
+            }
+            int ComputerShotReturnY(int Y)
+            {
+                int shotReturn = Y;
+                return shotReturn;
+            }
 
+            // The following five methods are extremely ugly, but it's the only solution I could come up with.
+            // Their purpose is to check that the position is within the array for each of the five ships.  
+            // The difference between the first method and the rest is that the rest have checks for their individual ships' positions.
             int[] PositionParse()
             {
                 int yCoord = -9999;
@@ -475,8 +666,9 @@ namespace Battleships
                     Console.WriteLine("Enter the coordinate (AX)");
                     string position = Console.ReadLine().ToUpper();
 
-                    while (position.Length != inputLength || !alphabet.Substring(0, mapWidth).Contains(position.Substring(0, 1))) 
+                    while (position.Length != inputLength || !alphabet.Substring(0, mapWidth).Contains(position.Substring(0, 1)))
                     {
+                        // A loop that confirms that the input is 2 symbols long and that it is correctly formatted (AX)
                         Console.WriteLine("Invalid position.");
                         Console.WriteLine("Enter the coordinate (AX)");
                         position = Console.ReadLine().ToUpper();
@@ -496,6 +688,163 @@ namespace Battleships
                 return positionReturn;
             }
 
-        }
+            int[] PositionParseXPlusOne()
+            {
+                int yCoord = -9999;
+                int xCoord = -9999;
+                int inputLength = 2;
+
+                while (yCoord < 0 || xCoord < 0 || yCoord > mapHeight || xCoord > mapWidth || xCoord + 1 > mapHeight)
+                {
+                    Console.WriteLine("Enter the coordinate (AX)");
+                    string position = Console.ReadLine().ToUpper();
+
+                    while (position.Length != inputLength || !alphabet.Substring(0, mapWidth).Contains(position.Substring(0, 1)))
+                    {
+                        Console.WriteLine("Invalid position.");
+                        Console.WriteLine("Enter the coordinate (AX)");
+                        position = Console.ReadLine().ToUpper();
+                    }
+                    string xPosition = position.Substring(0, 1);
+                    yCoord = int.Parse(position.Substring(1, 1));
+                    xCoord = alphabet.IndexOf(xPosition) + 1;
+                    if (yCoord < 0 || xCoord < 0 || yCoord > mapHeight || xCoord > mapWidth || xCoord + 1 > mapHeight)
+                    {
+                        Console.WriteLine("Position out of bounds. Try again.");
+                    }
+                }
+
+                int[] positionReturn = new int[2];
+                positionReturn[0] = xCoord;
+                positionReturn[1] = yCoord;
+                return positionReturn;
+            }
+
+            int[] PositionParseYPlusOne()
+            {
+                int yCoord = -9999;
+                int xCoord = -9999;
+                int inputLength = 2;
+
+                while (yCoord < 0 || xCoord < 0 || yCoord > mapHeight || xCoord > mapWidth || yCoord + 1 > mapHeight)
+                {
+                    Console.WriteLine("Enter the coordinate (AX)");
+                    string position = Console.ReadLine().ToUpper();
+
+                    while (position.Length != inputLength || !alphabet.Substring(0, mapWidth).Contains(position.Substring(0, 1)))
+                    {
+                        Console.WriteLine("Invalid position.");
+                        Console.WriteLine("Enter the coordinate (AX)");
+                        position = Console.ReadLine().ToUpper();
+                    }
+                    string xPosition = position.Substring(0, 1);
+                    yCoord = int.Parse(position.Substring(1, 1));
+                    xCoord = alphabet.IndexOf(xPosition) + 1;
+                    if (yCoord < 0 || xCoord < 0 || yCoord > mapHeight || xCoord > mapWidth || yCoord + 1 > mapHeight)
+                    {
+                        Console.WriteLine("Position out of bounds. Try again.");
+                    }
+                }
+
+                int[] positionReturn = new int[2];
+                positionReturn[0] = xCoord;
+                positionReturn[1] = yCoord;
+                return positionReturn;
+            }
+
+            int[] PositionParseXPlusTwo()
+            {
+                int yCoord = -9999;
+                int xCoord = -9999;
+                int inputLength = 2;
+
+                while (yCoord < 0 || xCoord < 0 || yCoord > mapHeight || xCoord > mapWidth || xCoord + 1 > mapHeight || xCoord + 2 > mapHeight)
+                {
+                    Console.WriteLine("Enter the coordinate (AX)");
+                    string position = Console.ReadLine().ToUpper();
+
+                    while (position.Length != inputLength || !alphabet.Substring(0, mapWidth).Contains(position.Substring(0, 1)))
+                    {
+                        Console.WriteLine("Invalid position.");
+                        Console.WriteLine("Enter the coordinate (AX)");
+                        position = Console.ReadLine().ToUpper();
+                    }
+                    string xPosition = position.Substring(0, 1);
+                    yCoord = int.Parse(position.Substring(1, 1));
+                    xCoord = alphabet.IndexOf(xPosition) + 1;
+                    if (yCoord < 0 || xCoord < 0 || yCoord > mapHeight || xCoord > mapWidth || xCoord + 1 > mapHeight || xCoord + 2 > mapHeight)
+                    {
+                        Console.WriteLine("Position out of bounds. Try again.");
+                    }
+                }
+
+                int[] positionReturn = new int[2];
+                positionReturn[0] = xCoord;
+                positionReturn[1] = yCoord;
+                return positionReturn;
+            }
+
+            int[] PositionParseYPlusTwo()
+            {
+                int yCoord = -9999;
+                int xCoord = -9999;
+                int inputLength = 2;
+
+                while (yCoord < 0 || xCoord < 0 || yCoord > mapHeight || xCoord > mapWidth || yCoord + 1 > mapHeight || yCoord + 2 > mapHeight)
+                {
+                    Console.WriteLine("Enter the coordinate (AX)");
+                    string position = Console.ReadLine().ToUpper();
+
+                    while (position.Length != inputLength || !alphabet.Substring(0, mapWidth).Contains(position.Substring(0, 1)))
+                    {
+                        Console.WriteLine("Invalid position.");
+                        Console.WriteLine("Enter the coordinate (AX)");
+                        position = Console.ReadLine().ToUpper();
+                    }
+                    string xPosition = position.Substring(0, 1);
+                    yCoord = int.Parse(position.Substring(1, 1));
+                    xCoord = alphabet.IndexOf(xPosition) + 1;
+                    if (yCoord < 0 || xCoord < 0 || yCoord > mapHeight || xCoord > mapWidth || yCoord + 1 > mapHeight || yCoord + 2 > mapHeight)
+                    {
+                        Console.WriteLine("Position out of bounds. Try again.");
+                    }
+                }
+
+                int[] positionReturn = new int[2];
+                positionReturn[0] = xCoord;
+                positionReturn[1] = yCoord;
+                return positionReturn;
+            }
+
+            void MiniMap()
+            {
+                // Map that is updated each time a new ship is placed. Only draws the Player's map
+                Console.WriteLine($"  {alphabet.Substring(0, mapWidth)}");
+                for (int p = 0; p < mapHeight; p++)
+                {
+                    Console.Write($"{p + 1} ");
+                    for (int q = 0; q < mapWidth; q++)
+                    {
+                        if (computerShot[q, p] == true)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write(playerMap[q, p]);
+                        }
+                        else if (playerMap[q, p] == "X")
+                        {
+                            Console.ForegroundColor = ConsoleColor.Blue;
+                            Console.Write(playerMap[q, p]);
+                        }
+                        else
+                        {
+                            Console.Write(playerMap[q, p]);
+                        }
+
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                    }
+                    Console.WriteLine();
+                }
+            }
+    }
     }
 }
